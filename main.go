@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"unicode/utf8"
@@ -16,10 +17,9 @@ func main() {
 	flag.Parse()
 
 	var fp string = ""
+	var pipe string
 
-	if flag.NArg() < 1 {
-		fmt.Println("no file specified")
-	} else if flag.NArg() > 1 {
+	if flag.NArg() > 1 {
 		fmt.Println("too many files specified, only one file is allowed")
 	} else {
 		fp = flag.Arg(0)
@@ -28,26 +28,30 @@ func main() {
 	if flag.NFlag() == 0 {
 		fmt.Println(countBytes(fp), countWords(fp), countLines(fp), fp)
 	} else {
-
+		if fp == "" {
+			pipe = "stdin"
+		}
 		if *lflag {
-			fmt.Println(countLines(fp), fp)
+			fmt.Println(countLines(fp), fp, pipe)
 		}
 		if *wflag {
-			fmt.Println(countWords(fp), fp)
+			fmt.Println(countWords(fp), fp, pipe)
 		}
 		if *cflag {
-			fmt.Println(countBytes(fp), fp)
+			fmt.Println(countBytes(fp), fp, pipe)
 		}
 		if *mflag {
-			fmt.Println(countChars(fp), fp)
+			fmt.Println(countChars(fp), fp, pipe)
 		}
 	}
 }
 
 func countLines(file string) (out string) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
+	var data []byte
+	if file == "" {
+		data = readPipe()
+	} else {
+		data = getData(file)
 	}
 
 	arr := strings.Split(string(data[:]), "\n")
@@ -57,10 +61,7 @@ func countLines(file string) (out string) {
 }
 
 func countBytes(file string) (out string) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
-	}
+	data := getData(file)
 
 	bytes := len(data)
 	out = fmt.Sprintf("%d", bytes)
@@ -68,10 +69,7 @@ func countBytes(file string) (out string) {
 }
 
 func countWords(file string) (out string) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
-	}
+	data := getData(file)
 
 	str := string(data[:])
 	words := len(strings.Fields(str))
@@ -80,13 +78,28 @@ func countWords(file string) (out string) {
 }
 
 func countChars(file string) (out string) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
-	}
+	data := getData(file)
 
 	str := string(data[:])
 	count := utf8.RuneCountInString(str)
 	out = fmt.Sprintf("%d", int(count))
+	return
+}
+
+func readPipe() (file []byte) {
+	stdin, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		fmt.Println(err)
+	}
+	file = []byte(stdin)
+	return
+}
+
+func getData(file string) (f []byte) {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	f = data
 	return
 }
