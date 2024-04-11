@@ -16,40 +16,47 @@ func main() {
 	var mflag = flag.Bool("m", false, "count characters")
 	flag.Parse()
 
-	var fp string = ""
+	var fp string
 	var pipe string
+	var stdin []byte
 
 	if flag.NArg() > 1 {
 		fmt.Println("too many files specified, only one file is allowed")
 	} else {
 		fp = flag.Arg(0)
 	}
+	if fp == "" {
+		pipe = "stdin"
+		stdin = readPipe()
+	} else {
+		pipe = ""
+	}
 
 	if flag.NFlag() == 0 {
-		fmt.Println(countBytes(fp), countWords(fp), countLines(fp), fp)
+		fmt.Println(countLines(fp, stdin), countWords(fp, stdin), countBytes(fp, stdin), pipe)
 	} else {
-		if fp == "" {
-			pipe = "stdin"
-		}
+
 		if *lflag {
-			fmt.Println(countLines(fp), fp, pipe)
+			fmt.Println(countLines(fp, stdin), fp, pipe)
 		}
 		if *wflag {
-			fmt.Println(countWords(fp), fp, pipe)
+			fmt.Println(countWords(fp, stdin), fp, pipe)
 		}
 		if *cflag {
-			fmt.Println(countBytes(fp), fp, pipe)
+			fmt.Println(countBytes(fp, stdin), fp, pipe)
 		}
 		if *mflag {
-			fmt.Println(countChars(fp), fp, pipe)
+			fmt.Println(countChars(fp, stdin), fp, pipe)
 		}
 	}
 }
 
-func countLines(file string) (out string) {
+func countLines(file string, stdin []byte) (out string) {
 	var data []byte
 	if file == "" {
-		data = readPipe()
+		if stdin != nil {
+			data = stdin
+		}
 	} else {
 		data = getData(file)
 	}
@@ -60,16 +67,30 @@ func countLines(file string) (out string) {
 	return
 }
 
-func countBytes(file string) (out string) {
-	data := getData(file)
+func countBytes(file string, stdin []byte) (out string) {
+	var data []byte
+	if file == "" {
+		if stdin != nil {
+			data = stdin
+		}
+	} else {
+		data = getData(file)
+	}
 
 	bytes := len(data)
 	out = fmt.Sprintf("%d", bytes)
 	return
 }
 
-func countWords(file string) (out string) {
-	data := getData(file)
+func countWords(file string, stdin []byte) (out string) {
+	var data []byte
+	if file == "" {
+		if stdin != nil {
+			data = stdin
+		}
+	} else {
+		data = getData(file)
+	}
 
 	str := string(data[:])
 	words := len(strings.Fields(str))
@@ -77,8 +98,15 @@ func countWords(file string) (out string) {
 	return
 }
 
-func countChars(file string) (out string) {
-	data := getData(file)
+func countChars(file string, stdin []byte) (out string) {
+	var data []byte
+	if file == "" {
+		if stdin != nil {
+			data = stdin
+		}
+	} else {
+		data = getData(file)
+	}
 
 	str := string(data[:])
 	count := utf8.RuneCountInString(str)
