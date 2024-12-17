@@ -4,11 +4,11 @@ import (
 	"testing"
 )
 
-const f string = "./test.txt"
+const testFile string = "./test.txt"
 
 // counts characters including multibyte characters
 func TestMflag(t *testing.T) {
-	got := countChars(f)
+	got := countChars(testFile, nil)
 	want := "339292"
 
 	if got != want {
@@ -16,8 +16,8 @@ func TestMflag(t *testing.T) {
 	}
 }
 
-func TestCFlag(t *testing.T) {
-	got := countBytes(f)
+func TestCflag(t *testing.T) {
+	got := countBytes(testFile, nil)
 	want := "342190"
 
 	if got != want {
@@ -25,8 +25,8 @@ func TestCFlag(t *testing.T) {
 	}
 }
 
-func TestLFlag(t *testing.T) {
-	got := countLines(f)
+func TestLflag(t *testing.T) {
+	got := countLines(testFile, nil)
 	want := "7145"
 
 	if got != want {
@@ -34,8 +34,8 @@ func TestLFlag(t *testing.T) {
 	}
 }
 
-func TestWFlag(t *testing.T) {
-	got := countWords(f)
+func TestWflag(t *testing.T) {
+	got := countWords(testFile, nil)
 	want := "58164"
 
 	if got != want {
